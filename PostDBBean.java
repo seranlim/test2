@@ -20,14 +20,14 @@ public class PostDBBean {
 
 	public Connection getConnection() throws Exception {
 		Connection con = null;
-		String url = "jdbc:mysql://localhost:3306/mysql?serverTimezone=UTC";
-		String user = "root";
-		String pwd = "1234";
+		String url = "jdbc:mysql://localhost:3306/allintonight";
+		String user = "allintonight";
+		String pwd = "team1team1";
 		
 
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			con = DriverManager.getConnection(url, user, pwd);
+			con = DriverManager.getConnection(url, user, password);
 
 		} catch (Exception e) {
 			e.printStackTrace();
