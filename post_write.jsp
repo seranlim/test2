@@ -12,7 +12,7 @@
 
 </head>
 <body>
-<script type="text/javascript" src="post.js" charset="utf-8"></script>
+<script type="text/javascript" src="function.js" charset="utf-8"></script>
 <body>
 	<center>
 		<h1>글 올 리 기</h1>
