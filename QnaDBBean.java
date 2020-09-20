@@ -27,7 +27,7 @@ public class QnaDBBean {
 
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			con = DriverManager.getConnection(url, user, password);
+			con = DriverManager.getConnection(url, user, pwd);
 
 		         
 		         } catch (Exception e) { 
