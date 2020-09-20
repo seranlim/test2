@@ -4,9 +4,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%
-	int no_no = Integer.parseInt(request.getParameter("no"));
+	int no = Integer.parseInt(request.getParameter("no"));
 	PostDBBean db=PostDBBean.getInstance();
-	PostBean post = db.getPost(no_no, true);
+	PostBean post = db.getPost(no,true);
 	SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	
 	
@@ -14,7 +14,6 @@
 	String email="";
 	String title="";
 	String content="";
-	int no= 0, noadd=0;
 	String upload_file="";
 	Timestamp date=null;
 	
