@@ -7,7 +7,7 @@
 	<jsp:setProperty name="qna" property="*" />
 </jsp:useBean>
 <%
-	post.setDate(new Timestamp(System.currentTimeMillis()));
+    qna.setDate(new Timestamp(System.currentTimeMillis()));
     QnaDBBean db = QnaDBBean.getInstance();
 if (db.insertQna(qna) == 1) {
 	response.sendRedirect("qna_list.jsp");
