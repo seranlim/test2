@@ -9,7 +9,7 @@
 <html>
 <head>
 <title></title>
-<script language="JavaScript" src="qna.js" charset="utf-8"></script>
+<script language="JavaScript" src="function.js" charset="utf-8"></script>
 </head>
 <body>
 	<center>
