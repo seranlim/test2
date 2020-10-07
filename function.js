@@ -1,7 +1,7 @@
 function check_ok(){
-	if(document.form.name.value.length==0){
-		alert("이름을 입력하세요.");
-		form.b_name.focus();
+	if(document.form.id.value.length==0){
+		alert("아이디를 입력하세요.");
+		form.id.focus();
 		return false;
 	}
 	if(document.form.title.value.length==0){
@@ -33,17 +33,3 @@ function delete_ok() {
 		}
 		document.form.submit();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
