@@ -1,4 +1,4 @@
-<%@ page import="community.*"%>
+<%@ page import="Community.*"%>
 <%@ page import="java.sql.Timestamp"%>
 <%@ page import="java.util.ArrayList"%>
 <%@ page import="java.text.SimpleDateFormat"%>
@@ -76,7 +76,7 @@
 				<th scope="col" class="text-muted">작성자</th>
 				<th scope="col" class="text-muted">작성일자</th>
 			</tr>
-			</thead>
+
 
 			<tbody>
 				<%
@@ -100,12 +100,10 @@
 				</a></td>
 				<td col="scope" class="text-muted" align="center"><%=sdf.format(date)%>
 				</td>
-				</tr>
 				<%
 					}
 				%>
 			</tbody>
-			</thead>
 		</table>
 		<br>
 		<br>
@@ -124,5 +122,4 @@
 			<td><%=PostBean.pageNumber(2)%></td>
 		</form>
 </body>
-
 </html>

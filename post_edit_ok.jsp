@@ -1,35 +1,57 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-<%@ page import="community.*" %>
+<%@page import="java.util.Enumeration"%>
+<%@page import="com.oreilly.servlet.multipart.DefaultFileRenamePolicy"%>
+<%@page import="com.oreilly.servlet.MultipartRequest"%>
+<%@page import="java.awt.print.Printable"%>
+<%@page import="java.sql.Timestamp" %>
+<%@ page import="Community.*"%>
+<%@ page language="java" contentType="text/html; charset=EUC-KR" pageEncoding="EUC-KR"%>
 
-<jsp:useBean id="post" class="community.PostBean">
-	<jsp:setProperty property="*" name="post"/>
-</jsp:useBean>
-
-<%
-	int no = Integer.parseInt(request.getParameter("no"));
-	post.setNo(no);
+		
+<%		ServletContext context = getServletContext(); //¾îÇÃ¸®ÄÉÀÌ¼Ç¿¡ ´ëÇÑ Á¤º¸¸¦ ServletContext °´Ã¼°¡ °®°Ô µÊ. 
+		String pageNUM = request.getParameter("pageNUM");
+		int no = Integer.parseInt(request.getParameter("no"));
+		String path = context.getRealPath("post_img");
+		MultipartRequest multi =new MultipartRequest(request, path, 5*1024*1024, "UTF-8", new DefaultFileRenamePolicy());
+		Enumeration files = multi.getFileNames();
+		String name = (String) files.nextElement();
 	
-	PostDBBean db = PostDBBean.getInstance();
-	int re = db.editPost(post);
 
-	
-	if(re == 1){
-		response.sendRedirect("post_list.jsp");
-	}else if(re == 0){
+		
+		String upload_file = multi.getFilesystemName(name);
+		String original = multi.getOriginalFileName(name);
+		
+		PostDBBean db=PostDBBean.getInstance();
+		PostBean post = new PostBean();
+		post = db.getPost(no);
+
+		post.setUpload_file(upload_file);
+		post.setDate(new Timestamp(System.currentTimeMillis()));
+		post.setPassword(multi.getParameter("password"));
+		post.setTitle(multi.getParameter("title"));
+		post.setContent(multi.getParameter("content"));
+		
+		
+		int re = db.editPost(post);
+		if(re == 1){		
 %>
 		<script>
-			alert("ë¹„ë°€ë²ˆí˜¸ê°€ ë§žì§€ ì•ŠìŠµë‹ˆë‹¤.");
-			history.go(-1);
+				alert("±ÛÀÌ ¼öÁ¤µÇ¾ú½À´Ï´Ù");		
 		</script>
 <%
-	}else if(re == -1){
+			response.sendRedirect("post_list.jsp?pageNUM="+pageNUM);
+		}else if(re == 0){
 %>
-		<script>
-			alert("ìˆ˜ì •ì— ì‹¤íŒ¨í•˜ì˜€ìŠµë‹ˆë‹¤.");
-			history.go(-1);
-		</script>
+			<script>
+				alert("ºñ¹Ð¹øÈ£°¡ ¸ÂÁö ¾Ê½À´Ï´Ù");
+				history.go(-1);
+			</script>
+<%
+		}else{
+			%>
+				<script>
+				alert("¼öÁ¤¿¡ ½ÇÆÐÇß½À´Ï´Ù");
+				history.go(-1);
+			</script>
 <%
 	}
-%>
-    
+%>	

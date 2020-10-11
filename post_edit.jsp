@@ -1,60 +1,80 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
-<%@ page import="community.*"%>
-<%
-	PostDBBean db = PostDBBean.getInstance();
-int no = Integer.parseInt(request.getParameter("no"));
-PostBean post = db.getPost(no, false);
+<%@page import="Community.*"%>
+<%@ page language="java" contentType="text/html; charset=EUC-KR"
+	    pageEncoding="EUC-KR"%>
+<%request.setCharacterEncoding("UTF-8"); %>    
+	    
+<%	
+		String pageNUM = request.getParameter("pageNUM");
+		PostDBBean db = PostDBBean.getInstance();
+		int no = Integer.parseInt(request.getParameter("no"));
+		PostBean post = db.getPost(no);
+		String email = post.getEmail();
+		String name = post.getName();
 %>
-<html>
-<head>
-<title></title>
-<script language="JavaScript" src="post.js" charset="utf-8"></script>
-</head>
-<body>
-	<center>
-		<h1>ê¸€ ìˆ˜ ì • í•˜ ê¸°</h1>
-		<form name="form" method="post" action="post_edit_ok.jsp?b_id=<%=no%>">
-			<table>
+	
+	<html>
+		<head>
+			<script type="text/javascript" src="function.js" charset="utf-8"></script>
+		</head>
+		<body>
+		<center>
+			<h1>
+				±Û ¼ö Á¤ ÇÏ ±â
+			</h1>
+			<form method="post" name="form" enctype="multipart/form-data" accept-charset="UTF-8" action="post_edit_ok.jsp?no=<%=no%>&pageNUM=<%=pageNUM%>">
+				<table>
+					<tr height="30">
+						<td width="80">
+							ÀÛ¼ºÀÚ
+						</td>
+						<td width="140">
+							<input type="text" value= "<%=name%>" size="10" readonly>
+						</td>
+						<td width="80">
+							ÀÌ¸ÞÀÏ
+						</td>
+						<td width="200">
+								<input type="text" value= "<%=email%>" size="15" readonly>
+						</td>
+					</tr>
+					<tr height="30">
+						<td width="80">
+							±ÛÁ¦¸ñ
+						</td>
+						<td colspan="3" width="460">
+							<input type="text" name="title" size="55">
+						</td>
+					</tr>
 				<tr height="30">
-					<td width="80">ìž‘ì„±ìž</td>
-					<td width="140"><input type="text" name="name" size="10"
-						value="<%=post.getName()%>"></td>
-
-					<td width="80">ì´ë©”ì¼</td>
-					<td width="240"><input type="text" name="email" size="24"
-						value="<%=post.getEmail()%>"></td>
+					<td width="80">ÆÄÀÏ ¾÷·Îµå</td>
+					<td colspan="3" width="460"><input type="file" value ="ÆÄÀÏ" name="upload_file"
+						size="55"></td>
 				</tr>
-
-				<tr height="30">
-					<td width="80">ê¸€ì œëª©</td>
-					<td colspan="3"><input type="text" name="title" size="55"
-						value="<%=post.getTitle()%>"></td>
-					<td colspan="3">íŒŒì¼ì—…ë¡œë“œ<input type="text" name="upload_file"
-						size="55" value="<%=post.getUpload_file()%>">
-					</td>
-				</tr>
-
-				<tr>
-					<td colspan="4"><textarea name="content" rows="10" cols="65">
-								<%=post.getContent()%>
-							</textarea></td>
-				</tr>
-
-				<tr>
-					<td width="80">ì•”&nbsp;&nbsp;í˜¸</td>
-					<td colspan="3"><input type="password" name="password" size="12">
-					</td>
-				</tr>
-
-				<tr height="50" align="center">
-					<td colspan="4"><input type="button" value="ê¸€ìˆ˜ì •"
-						onclick="check_ok()">&nbsp;&nbsp;&nbsp; <input
-						type="reset" value="ë‹¤ì‹œìž‘ì„±">&nbsp; <input type="button"
-						value="ê¸€ëª©ë¡" onclick="location.href='post_list.jsp'"></td>
-				</tr>
-			</table>
-		</form>
-	</center>
-</body>
-</html>
+					<tr>
+						<td colspan="4">
+							<textarea name="content" rows="10" cols="65"><%=post.getContent() %></textarea>
+						</td>
+					</tr>
+					<tr>
+						<td width="80">
+							¾Ï&nbsp;&nbsp;È£
+						</td>
+						<td width="460" colspan="3">
+							<input type="password" name="password" maxlength="12" size="12">
+						</td>
+					</tr>
+					<tr height="50" align="center">
+						<td colspan="4" width="480">
+						<input type="submit" value="±Û¼öÁ¤">
+							<!-- <input type="button" value="±Û¼öÁ¤"
+								onclick="check_ok()"> -->&nbsp;
+							<input type="reset" value="´Ù½ÃÀÛ¼º">
+							<input type="button" value="±Û¸ñ·Ï"
+								onclick="location.href='post_list.jsp?pageNUM=<%=pageNUM%>'">&nbsp;
+						</td>
+					</tr>
+				</table>
+			</form>
+		</center>
+	</body>
+	</html>

@@ -1,21 +1,22 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<%@ page import="community.*" %>
-
-<jsp:useBean id="qna" class="community.QnaBean">
-	<jsp:setProperty property="*" name="qna"/>
+<%@ page import="Community.*" %>
+<%
+	request.setCharacterEncoding("UTF-8");
+%>
+<jsp:useBean id="qna" class="Community.QnaBean">
+	<jsp:setProperty name="qna" property="*" />
 </jsp:useBean>
 
-<%
+<%	String pageNUM = request.getParameter("pageNUM");
 	int no = Integer.parseInt(request.getParameter("no"));
 	qna.setNo(no);
 	
 	QnaDBBean db = QnaDBBean.getInstance();
-	int re = db.editqna(qna);
-
+	int re = db.editQna(qna);
 	
 	if(re == 1){
-		response.sendRedirect("qna_list.jsp");
+		response.sendRedirect("qna_list.jsp?pageNUM="+pageNUM);
 	}else if(re == 0){
 %>
 		<script>
@@ -32,4 +33,3 @@
 <%
 	}
 %>
-    

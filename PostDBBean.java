@@ -1,15 +1,11 @@
-package community;
+package Community;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
-import myUtil.HanConv;
 
 public class PostDBBean {
 	private static PostDBBean instance = new PostDBBean();
@@ -20,14 +16,13 @@ public class PostDBBean {
 
 	public Connection getConnection() throws Exception {
 		Connection con = null;
-		String url = "jdbc:mysql://localhost:3306/allintonight";
+		String url = "jdbc:mysql://203.245.44.74:3306/allintonight?serverTimezone=UTC";
 		String user = "allintonight";
 		String pwd = "team1team1";
-		
 
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			con = DriverManager.getConnection(url, user, password);
+			con = DriverManager.getConnection(url, user, pwd);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -36,7 +31,6 @@ public class PostDBBean {
 	}
 
 	public int insertPost(PostBean post) {
-
 		Connection con = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -46,7 +40,7 @@ public class PostDBBean {
 		try {
 			con = getConnection();
 
-			sql = "select max(no) from post_board";
+			sql = "select max(no) from post";
 			pstmt = con.prepareStatement(sql);
 			rs = pstmt.executeQuery();
 
@@ -56,19 +50,17 @@ public class PostDBBean {
 				number = 1;
 			}
 
-			sql = "insert into post_board(no,name,email,title"
-					+ ",content,password,date,upload_file) values(?, ?,?, ?, ?, ?,?,?)";
+			sql = "insert into post(no, name, password, email, title, content, upload_file, date) values(?, ?, ?, ?, ?, ?, ?, ?)";
 			pstmt = con.prepareStatement(sql);
 			pstmt.setInt(1, number);
-			pstmt.setString(2, HanConv.toKor(post.getName()));
-			pstmt.setString(3, post.getEmail());
-			pstmt.setString(4, HanConv.toKor(post.getTitle()));
-			pstmt.setString(5, HanConv.toKor(post.getContent()));
-			pstmt.setString(6, HanConv.toKor(post.getPassword()));
-			pstmt.setTimestamp(7, post.getDate());
-			pstmt.setString(8, post.getUpload_file());
+			pstmt.setString(2, post.getName());
+			pstmt.setString(3, post.getPassword());
+			pstmt.setString(4, post.getEmail());
+			pstmt.setString(5, post.getTitle());
+			pstmt.setString(6, post.getContent());
+			pstmt.setString(7, post.getUpload_file());
+			pstmt.setTimestamp(8, post.getDate());
 			pstmt.executeUpdate();
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -87,32 +79,74 @@ public class PostDBBean {
 		return 1;
 	}
 
-	public ArrayList<PostBean> listpost() {
+	public ArrayList<PostBean> listPost(String pageNumber, String subject, String word) {
 		Connection con = null;
 		Statement stmt = null;
 		ResultSet rs = null;
+		ResultSet pageset = null;
+
+		int absolutepage = 1;
+		int dbcount = 0;
+		String sql = "";
 
 		ArrayList<PostBean> postList = new ArrayList<PostBean>();
 
 		try {
 			con = getConnection();
-			stmt = con.createStatement();
-			String sql = "select a.*, to_char(date, 'YYYY-MM-DD hh24:mi') date from post_board a order by no";
+			stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+			pageset = stmt.executeQuery("select count(no) from post");
+
+			if (pageset.next()) {
+				dbcount = pageset.getInt(1);
+				pageset.close();
+			}
+			if (dbcount % PostBean.pagesize == 0) {
+				PostBean.pagecount = dbcount / (PostBean.pagesize);
+			} else {
+				PostBean.pagecount = dbcount / (PostBean.pagesize) + 1;
+			}
+
+			if (pageNumber != null) {
+				PostBean.pageNUM = Integer.parseInt(pageNumber);
+				absolutepage = (PostBean.pageNUM - 1) * PostBean.pagesize + 1;
+			}
+
+			if (subject == null) {
+				sql = "select * from post order by no desc";
+			} else if (subject.equals("1")) {
+				sql = "select * from post where title like '%" + word + "%' or content like '%" + word + "%' desc";
+			} else {
+				sql = "select * from post where name like '%" + word + "%' desc";
+			}
+
 			rs = stmt.executeQuery(sql);
 
-			while (rs.next()) {
-				PostBean post = new PostBean();
-				post.setNo(rs.getInt(1));
-				post.setName(rs.getString(2));
-				post.setEmail(rs.getString(3));
-				post.setTitle(rs.getString(4));
-				post.setContent(rs.getString(5));
-				post.setPassword(rs.getString(6));
-				post.setDate(rs.getTimestamp(7));
-				post.setUpload_file(rs.getString(8));
+			if (rs.next()) {
+				rs.absolute(absolutepage);
+				int count = 0;
 
-				postList.add(post);
+				while (count < PostBean.pagesize) {
+					PostBean post = new PostBean();
+					post.setNo(rs.getInt(1));
+					post.setName(rs.getString(2));
+					post.setPassword(rs.getString(3));
+					post.setEmail(rs.getString(4));
+					post.setTitle(rs.getString(5));
+					post.setContent(rs.getString(6));
+					post.setUpload_file(rs.getString(7));
+					post.setDate(rs.getTimestamp(8));
+
+					postList.add(post);
+
+					if (rs.isLast()) {
+						break;
+					} else {
+						rs.next();
+					}
+					count++;
+				}
 			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -131,7 +165,7 @@ public class PostDBBean {
 		return postList;
 	}
 
-	public PostBean getPost(int no,boolean noadd) {
+	public PostBean getPost(int no) {
 		Connection con = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -140,31 +174,21 @@ public class PostDBBean {
 
 		try {
 			con = getConnection();
-			
-			if (noadd == true) {
-			sql = "update post_board set no=no+1 where no=?";
-			pstmt = con.prepareStatement(sql);
-			pstmt.setInt(1, no);
-			pstmt.executeUpdate();
-			pstmt.close();
-			
-			}
-			sql = "select * from post_board where no=?";
+			sql = "select * from post where no=?";
 			pstmt = con.prepareStatement(sql);
 			pstmt.setInt(1, no);
 			rs = pstmt.executeQuery();
-			
+
 			if (rs.next()) {
 				post = new PostBean();
 				post.setNo(rs.getInt(1));
 				post.setName(rs.getString(2));
-				post.setEmail(rs.getString(3));
-				post.setTitle(rs.getString(4));
-				post.setContent(rs.getString(5));
-				post.setPassword(rs.getString(6));
-				post.setDate(rs.getTimestamp(7));
-				post.setUpload_file(rs.getString(8));
-
+				post.setPassword(rs.getString(3));
+				post.setEmail(rs.getString(4));
+				post.setTitle(rs.getString(5));
+				post.setContent(rs.getString(6));
+				post.setUpload_file(rs.getString(7));
+				post.setDate(rs.getTimestamp(8));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -195,7 +219,7 @@ public class PostDBBean {
 
 		try {
 			con = getConnection();
-			sql = "select password from post_board where no=?";
+			sql = "select password from post where no=?";
 			pstmt = con.prepareStatement(sql);
 			pstmt.setInt(1, no);
 			rs = pstmt.executeQuery();
@@ -206,7 +230,7 @@ public class PostDBBean {
 				if (!pwd.equals(password)) {
 					re = 0;
 				} else {
-					sql = "delete post_board where no=?";
+					sql = "delete from post where no=?";
 					pstmt = con.prepareStatement(sql);
 					pstmt.setInt(1, no);
 					pstmt.executeUpdate();
@@ -237,50 +261,89 @@ public class PostDBBean {
 
 		String sql = "";
 		String pwd = "";
-
 		int re = -1;
 
 		try {
 			con = getConnection();
-			sql = "select password from post_board where no=?";
+			sql = "select password from post where no=?";
 			pstmt = con.prepareStatement(sql);
 			pstmt.setInt(1, post.getNo());
 			rs = pstmt.executeQuery();
 
 			if (rs.next()) {
 				pwd = rs.getString(1);
-				if (!pwd.contentEquals(post.getPassword())) {
+
+				if (!pwd.equals(post.getPassword())) {
 					re = 0;
 				} else {
-					sql = "update post_board set name=?, email=?, title=?" + ",content=? where no=?";
+					sql = "update post set Password=?, Title = ?, Content = ?, Upload_file=? where no=?";
 					pstmt = con.prepareStatement(sql);
-					pstmt.setString(1, HanConv.toKor(post.getName()));
-					pstmt.setString(2, post.getEmail());
-					pstmt.setString(3, HanConv.toKor(post.getTitle()));
-					pstmt.setString(4, HanConv.toKor(post.getContent()));
-					pstmt.setInt(5,post.getNo());
+					pstmt.setString(1, post.getPassword());
+					pstmt.setString(2, post.getTitle());
+					pstmt.setString(3, post.getContent());
+					pstmt.setString(4, post.getUpload_file());
+					pstmt.setInt(5, post.getNo());
 					pstmt.executeUpdate();
-
 					re = 1;
 				}
+
 			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
-				if (rs != null) {
+				if (rs != null)
 					rs.close();
-				}
-				if (pstmt != null) {
+				if (pstmt != null)
 					pstmt.close();
-				}
-				if (con != null) {
+				if (con != null)
 					con.close();
-				}
 			} catch (Exception e2) {
 				e2.printStackTrace();
 			}
 		}
 		return re;
+
+	}
+
+	public int searchPost(String word) {
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		int no = 0;
+		String sql = "";
+
+		try {
+			con = getConnection();
+			sql = "select no from post where name=? and content=?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, word);
+			pstmt.setString(2, word);
+			rs = pstmt.executeQuery();
+
+			if (rs.next()) {
+				no = rs.getInt(1);
+
+			} else {
+				no = 0;
+
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+				if (pstmt != null)
+					pstmt.close();
+				if (con != null)
+					con.close();
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		return no;
+
 	}
 }
